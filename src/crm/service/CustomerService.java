@@ -2,6 +2,7 @@ package crm.service;
 
 import crm.dao.CustomerDao;
 import crm.domain.Customer;
+import crm.domain.Page;
 
 import java.util.List;
 
@@ -30,5 +31,21 @@ public class CustomerService {
 
     public List<Customer> query(Customer cond) {
         return customerDao.query(cond);
+    }
+
+    public int calRecords() {
+        return customerDao.calRecords();
+    }
+
+    public int calRecords(Customer cond) {
+        return customerDao.calRecords(cond);
+    }
+
+    public List<Customer> findAllByPage(Page<Customer> page) {
+        return customerDao.findAllByPage(page);
+    }
+
+    public List<Customer> queryByPage(Page<Customer> page, Customer cond) {
+        return customerDao.queryByPage(page,cond);
     }
 }

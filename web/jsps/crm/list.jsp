@@ -15,7 +15,12 @@
 	<!--
 	<link rel="stylesheet" type="text/css" href="styles.css">
 	-->
-
+	  <script type="text/javascript">
+		  function _change() {
+			  var select = document.getElementById("select");
+			  location = "<c:url value='/CustomerServlet?${page.url}'/>&currPage=" + select.value;
+		  }
+	  </script>
   </head>
   
   <body>
@@ -30,7 +35,7 @@
 		<th>描述</th>
 		<th>操作</th>
 	</tr>
-	<c:forEach items="${list}" var="ctm">
+	<c:forEach items="${page.data}" var="ctm">
 		<tr>
 			<td>${ctm.cname}</td>
 			<td>${ctm.gender}</td>
@@ -45,5 +50,66 @@
 		</tr>
 	</c:forEach>
 </table>
+<br/>
+
+<p style="text-align: center;">
+	第${page.currPage}页/共${page.totalPage}页
+
+	<a href="${page.url}&currPage=1">首页</a>
+	
+	<c:choose>
+		<c:when test="${page.currPage eq 1}">上一页</c:when>
+		<c:otherwise>
+			<a href="${page.url}&currPage=${page.currPage-1}">上一页</a>
+		</c:otherwise>
+	</c:choose>
+	
+	<c:choose>
+		<c:when test="${page.totalPage <= 10}">
+			<c:set var="begin" value="1"/>
+			<c:set var="end" value="${page.totalPage}"/>
+		</c:when>
+		<c:otherwise>
+			<c:set var="begin" value="${page.currPage-4}"/>
+			<c:set var="end" value="${page.currPage+5}"/>
+			<c:choose>
+				<c:when test="${begin < 1}">
+					<c:set var="begin" value="1"/>
+					<c:set var="end" value="10"/>
+				</c:when>
+				<c:when test="${end > page.totalPage}">
+					<c:set var="end" value="${page.totalPage}"/>
+					<c:set var="begin" value="${page.totalPage-9}"/>
+				</c:when>
+			</c:choose>
+		</c:otherwise>
+	</c:choose>
+
+	<c:forEach begin="${begin}" end="${end}" var="i">
+		<c:choose>
+			<c:when test="${i == page.currPage}">${i}</c:when>
+			<c:otherwise>
+				<a href="${page.url}&currPage=${i}">${i}</a>
+			</c:otherwise>
+		</c:choose>
+	</c:forEach>
+
+	<c:choose>
+		<c:when test="${page.currPage eq page.totalPage}">下一页</c:when>
+		<c:otherwise>
+			<a href="${page.url}&currPage=${page.currPage+1}">下一页</a>
+		</c:otherwise>
+	</c:choose>
+
+	<a href="${page.url}&currPage=${page.totalPage}">尾页</a>
+
+	<select name="currPage" onchange="_change()" id="select">
+		<c:forEach begin="1" end="${page.totalPage}" var="i">
+			<option value="${i}" <c:if test="${i eq page.currPage }">selected="selected"</c:if> >
+					${i}
+			</option>
+		</c:forEach>
+	</select>
+</p>
   </body>
 </html>

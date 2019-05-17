@@ -1,10 +1,13 @@
 package crm.dao;
 
 import crm.domain.Customer;
+import crm.domain.Page;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
+import org.apache.commons.dbutils.handlers.ScalarHandler;
 import tools.jdbc.TxQueryRunner;
 
+import javax.jnlp.IntegrationService;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -114,7 +117,7 @@ public class CustomerDao {
             sql.append("email like ?");
             params.add("%" + cond.getEmail() + "%");
         }
-        System.out.println(sql.toString());
+
         try {
             return qr.query(sql.toString(),new BeanListHandler<>(Customer.class),params.toArray());
         } catch (SQLException e) {
@@ -122,4 +125,114 @@ public class CustomerDao {
         }
 
     }
+    /**
+     * 计算总记录数
+     * @return cnt
+     * */
+    public int calRecords() {
+        String sql = "select count(*) from t_customer";
+        try {
+            Long cnt = (Long)qr.query(sql, new ScalarHandler());
+            return cnt.intValue();
+        } catch (SQLException e) {
+            throw new RuntimeException("查询总记录数失败！");
+        }
+    }
+
+    /**
+     * 计算按条件查询的总记录数
+     * @param cond
+     * @return cnt
+     * */
+    public int calRecords(Customer cond) {
+
+        StringBuilder sql = new StringBuilder();
+        ArrayList<String> params = new ArrayList<>();
+        sql.append("select count(*) from t_customer where ");
+        //增加条件
+        if(cond.getCname() != null && cond.getCname().trim().length() != 0) {
+            sql.append("cname like ?");
+            params.add("%" + cond.getCname() + "%");
+        }
+        if(cond.getGender() != null && cond.getGender().trim().length() != 0) {
+            if(params.size() != 0) sql.append("and ");
+            sql.append("gender like ?");
+            params.add("%" + cond.getGender() + "%");
+        }
+        if(cond.getCellphone() != null && cond.getCellphone().trim().length() != 0) {
+            if(params.size() != 0) sql.append("and ");
+            sql.append("cellphone like ?");
+            params.add("%" +cond.getCellphone() + "%");
+        }
+        if(cond.getEmail() != null && cond.getEmail().trim().length() != 0) {
+            if(params.size() != 0) sql.append("and ");
+            sql.append("email like ?");
+            params.add("%" + cond.getEmail() + "%");
+        }
+
+        try {
+            Long cnt = (Long)qr.query(sql.toString(), new ScalarHandler(),params.toArray());
+            return cnt.intValue();
+        } catch (SQLException e) {
+            throw new RuntimeException("高级搜索总记录数失败！");
+        }
+    }
+
+    /**
+     * 计算条件查询的分页记录
+     * @param page,cond
+     * @return List<Customer>
+     * */
+    public List<Customer> queryByPage(Page<Customer> page, Customer cond) {
+        StringBuilder sql = new StringBuilder();
+        ArrayList<String> params = new ArrayList<>();
+        sql.append("select * from t_customer where ");
+        if(cond.getCname() != null && cond.getCname().trim().length() != 0) {
+            sql.append("cname like ? ");
+            params.add("%" + cond.getCname() + "%");
+        }
+        if(cond.getGender() != null && cond.getGender().trim().length() != 0) {
+            if(params.size() != 0) sql.append("and ");
+            sql.append("gender like ? ");
+            params.add("%" + cond.getGender() + "%");
+        }
+        if(cond.getCellphone() != null && cond.getCellphone().trim().length() != 0) {
+            if(params.size() != 0) sql.append("and ");
+            sql.append("cellphone like ? ");
+            params.add("%" +cond.getCellphone() + "%");
+        }
+        if(cond.getEmail() != null && cond.getEmail().trim().length() != 0) {
+            if(params.size() != 0) sql.append("and ");
+            sql.append("email like ? ");
+            params.add("%" + cond.getEmail() + "%");
+        }
+        Integer beginIndex = page.getCurrIndex();
+        params.add(beginIndex.toString());
+        Integer size = page.getPageSize();
+        params.add(size.toString());
+        sql.append("limit ?,?");
+        try {
+            return qr.query(sql.toString(),new BeanListHandler<>(Customer.class),params.toArray());
+        } catch (SQLException e) {
+            throw new RuntimeException("高级搜索本页用户失败！");
+        }
+    }
+
+    /**
+     * 计算分页记录
+     * @param page
+     * @return List<Customer>
+     * */
+    public List<Customer> findAllByPage(Page<Customer> page) {
+        int beginIndex = page.getCurrIndex();
+        int size = page.getPageSize();
+        String sql = "select * from t_customer limit ?,?";
+        Object[] params = {beginIndex,size};
+        try {
+            return qr.query(sql,new BeanListHandler<>(Customer.class),params);
+        } catch (SQLException e) {
+            throw new RuntimeException("查询本页用户失败！");
+        }
+    }
+
 }
